@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  creationTimestamp: "2025-11-26T14:29:07Z"
+  labels:
+    kubernetes.io/metadata.name: jellyfin
+  name: jellyfin
+  resourceVersion: "538406"
+  uid: 1c488afa-c24b-4d2d-9ef9-11e8d832a97e
+spec:
+  finalizers:
+  - kubernetes
+status:
+  phase: Active

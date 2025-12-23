@@ -1,0 +1,14 @@
+USER-SUPPLIED VALUES:
+grafana:
+  persistence:
+    enabled: true
+    size: 10Gi
+prometheus:
+  prometheusSpec:
+    retention: 7d
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          resources:
+            requests:
+              storage: 20Gi

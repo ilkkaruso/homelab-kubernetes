@@ -1,0 +1,35 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    cert-manager.io/cluster-issuer: selfsigned-issuer
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"networking.k8s.io/v1","kind":"Ingress","metadata":{"annotations":{"cert-manager.io/cluster-issuer":"selfsigned-issuer","nginx.ingress.kubernetes.io/proxy-body-size":"0"},"name":"jellyfin","namespace":"jellyfin"},"spec":{"ingressClassName":"nginx","rules":[{"host":"jellyfin.homelab.local","http":{"paths":[{"backend":{"service":{"name":"jellyfin","port":{"number":8096}}},"path":"/","pathType":"Prefix"}]}}],"tls":[{"hosts":["jellyfin.homelab.local"],"secretName":"jellyfin-tls"}]}}
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+  creationTimestamp: "2025-11-26T14:44:18Z"
+  generation: 1
+  name: jellyfin
+  namespace: jellyfin
+  resourceVersion: "539168"
+  uid: 2c9523df-dbee-4f84-bdf4-efc8b41a5a7c
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: jellyfin.homelab.local
+    http:
+      paths:
+      - backend:
+          service:
+            name: jellyfin
+            port:
+              number: 8096
+        path: /
+        pathType: Prefix
+  tls:
+  - hosts:
+    - jellyfin.homelab.local
+    secretName: jellyfin-tls
+status:
+  loadBalancer:
+    ingress:
+    - ip: 192.168.1.200

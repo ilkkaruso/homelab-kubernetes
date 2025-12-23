@@ -1,0 +1,34 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    cert-manager.io/cluster-issuer: selfsigned-issuer
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"networking.k8s.io/v1","kind":"Ingress","metadata":{"annotations":{"cert-manager.io/cluster-issuer":"selfsigned-issuer"},"name":"prometheus","namespace":"monitoring"},"spec":{"ingressClassName":"nginx","rules":[{"host":"prometheus.homelab.local","http":{"paths":[{"backend":{"service":{"name":"kube-prometheus-stack-prometheus","port":{"number":9090}}},"path":"/","pathType":"Prefix"}]}}],"tls":[{"hosts":["prometheus.homelab.local"],"secretName":"prometheus-tls"}]}}
+  creationTimestamp: "2025-12-20T12:54:06Z"
+  generation: 1
+  name: prometheus
+  namespace: monitoring
+  resourceVersion: "1946615"
+  uid: 4b4c4c24-e86e-4daf-8538-266b2dcb96bb
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: prometheus.homelab.local
+    http:
+      paths:
+      - backend:
+          service:
+            name: kube-prometheus-stack-prometheus
+            port:
+              number: 9090
+        path: /
+        pathType: Prefix
+  tls:
+  - hosts:
+    - prometheus.homelab.local
+    secretName: prometheus-tls
+status:
+  loadBalancer:
+    ingress:
+    - ip: 192.168.1.200

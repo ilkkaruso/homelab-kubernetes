@@ -1,0 +1,34 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    cert-manager.io/cluster-issuer: selfsigned-issuer
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"networking.k8s.io/v1","kind":"Ingress","metadata":{"annotations":{"cert-manager.io/cluster-issuer":"selfsigned-issuer"},"name":"grafana","namespace":"monitoring"},"spec":{"ingressClassName":"nginx","rules":[{"host":"grafana.homelab.local","http":{"paths":[{"backend":{"service":{"name":"kube-prometheus-stack-grafana","port":{"number":80}}},"path":"/","pathType":"Prefix"}]}}],"tls":[{"hosts":["grafana.homelab.local"],"secretName":"grafana-tls"}]}}
+  creationTimestamp: "2025-12-23T11:39:56Z"
+  generation: 1
+  name: grafana
+  namespace: monitoring
+  resourceVersion: "2121731"
+  uid: 400d3080-f053-453d-846c-899c7c4320a1
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: grafana.homelab.local
+    http:
+      paths:
+      - backend:
+          service:
+            name: kube-prometheus-stack-grafana
+            port:
+              number: 80
+        path: /
+        pathType: Prefix
+  tls:
+  - hosts:
+    - grafana.homelab.local
+    secretName: grafana-tls
+status:
+  loadBalancer:
+    ingress:
+    - ip: 192.168.1.200
