@@ -111,7 +111,7 @@ Self-hosted media streaming platform with hardware transcoding capabilities.
 - **Capacity:** Supports 4-6 concurrent 1080p streams
 - **Access:**
   - Remote: Via Cloudflare Tunnel (secure)
-  - Local: https://jellyfin.homelab.local
+  - Local: local.homelab. etc 
 
 **Monitoring:**
 - CPU/Memory usage tracked via Prometheus
