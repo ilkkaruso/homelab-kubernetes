@@ -1,0 +1,63 @@
+# Secrets - NEVER commit these!
+*secret*.yaml
+*credential*.yaml
+*password*.yaml
+*token*.yaml
+*.key
+*.pem
+*.crt
+*.p12
+*.pfx
+
+# Environment files
+.env
+.env.*
+*.env
+
+# Kubernetes specific
+*-secret.yaml
+secret-*.yaml
+
+# Backup files
+*.bak
+*.backup
+*~
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# IDE and editor files
+.vscode/
+.idea/
+*.iml
+*.sublime-project
+*.sublime-workspace
+.project
+.classpath
+.settings/
+
+# Temporary files
+/tmp/
+*.tmp
+*.log
+
+# Personal notes (might contain sensitive info)
+notes.txt
+TODO.private
+scratch.txt
+
+# Helm
+*.tgz
+charts/*/charts/
+
+# Git
+*.orig
