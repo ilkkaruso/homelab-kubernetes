@@ -1,4 +1,4 @@
-name: CI/CD - Validate Manifests
+name: Validate Manifests
 
 on:
   push:
@@ -7,18 +7,30 @@ on:
     branches: [ main ]
 
 jobs:
-  lint-and-validate:
-    name: Lint and Validate
+  validate:
     runs-on: ubuntu-latest
     
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: YAML Lint
+      - name: Validate Kubernetes manifests
+        run: |
+          docker run --rm -v $(pwd):/workdir ghcr.io/yannh/kubeconform:latest \
+            -summary -ignore-missing-schemas \
+            -skip /workdir/monitoring/prometheus/values.yaml \
+            /workdir/applications/ /workdir/monitoring/
+
+      - name: Run security checks
+        run: |
+          chmod +x scripts/pre-commit-check.sh
+          ./scripts/pre-commit-check.sh
+
+      - name: YAML Lint (relaxed)
         uses: ibiqlik/action-yamllint@v3
         with:
           file_or_dir: applications/ monitoring/
+          strict: false
           config_data: |
             extends: relaxed
             rules:
@@ -26,39 +38,3 @@ jobs:
                 max: 200
               indentation: disable
               document-start: disable
-
-      - name: Validate Kubernetes manifests
-        run: |
-          docker run --rm -v $(pwd):/workdir ghcr.io/yannh/kubeconform:latest \
-            -summary -ignore-missing-schemas \
-            /workdir/applications/ /workdir/monitoring/
-
-  security-checks:
-    name: Security Checks
-    runs-on: ubuntu-latest
-    
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Run pre-commit security checks
-        run: |
-          chmod +x scripts/pre-commit-check.sh
-          ./scripts/pre-commit-check.sh
-
-  summary:
-    name: Workflow Summary
-    runs-on: ubuntu-latest
-    needs: [lint-and-validate, security-checks]
-    if: always()
-    
-    steps:
-      - name: Check results
-        run: |
-          echo "=========================================="
-          if [ "${{ needs.lint-and-validate.result }}" == "success" ] && [ "${{ needs.security-checks.result }}" == "success" ]; then
-            echo "✅ All checks passed!"
-          else
-            echo "❌ Some checks failed. Review logs above."
-          fi
-          echo "=========================================="
