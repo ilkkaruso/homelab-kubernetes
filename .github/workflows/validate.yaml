@@ -1,0 +1,55 @@
+name: Validate Kubernetes Manifests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Validate with kubeconform
+        uses: docker://ghcr.io/yannh/kubeconform:latest
+        with:
+          entrypoint: '/kubeconform'
+          args: "-summary -output json applications/ monitoring/ infrastructure/"
+
+      - name: Run security checks
+        run: |
+          echo "🔍 Running security checks..."
+          chmod +x scripts/pre-commit-check.sh
+          ./scripts/pre-commit-check.sh
+
+      - name: YAML Lint
+        uses: ibiqlik/action-yamllint@v3
+        with:
+          file_or_dir: applications/ monitoring/
+          strict: false
+          config_data: |
+            extends: default
+            rules:
+              line-length:
+                max: 120
+              indentation:
+                spaces: 2
+              comments:
+                min-spaces-from-content: 1
+
+      - name: Check for TODOs (informational)
+        continue-on-error: true
+        run: |
+          echo "📝 Checking for TODO/FIXME..."
+          git grep -n "TODO\|FIXME" -- '*.yaml' '*.md' || echo "No TODOs found"
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "=========================================="
+          echo "✅ Validation complete!"
+          echo "=========================================="
