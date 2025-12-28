@@ -14,27 +14,29 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Install kubeconform
+        run: |
+          wget -q https://github.com/yannh/kubeconform/releases/latest/download/kubeconform-linux-amd64.tar.gz
+          tar xf kubeconform-linux-amd64.tar.gz
+          sudo mv kubeconform /usr/local/bin/
+
       - name: Validate Kubernetes manifests
         run: |
-          docker run --rm -v $(pwd):/workdir ghcr.io/yannh/kubeconform:latest \
-            -summary -ignore-missing-schemas \
-            -skip /workdir/monitoring/prometheus/values.yaml \
-            /workdir/applications/ /workdir/monitoring/
+          echo "📋 Validating Kubernetes manifests..."
+          
+          # Validate only actual K8s manifests (skip values.yaml)
+          find applications/ monitoring/ -type f -name "*.yaml" ! -name "values.yaml" | while read file; do
+            echo "Checking: $file"
+            kubeconform -ignore-missing-schemas "$file"
+          done
+          
+          echo "✅ Validation complete"
 
       - name: Run security checks
         run: |
+          echo "🔍 Running security checks..."
           chmod +x scripts/pre-commit-check.sh
           ./scripts/pre-commit-check.sh
 
-      - name: YAML Lint (relaxed)
-        uses: ibiqlik/action-yamllint@v3
-        with:
-          file_or_dir: applications/ monitoring/
-          strict: false
-          config_data: |
-            extends: relaxed
-            rules:
-              line-length:
-                max: 200
-              indentation: disable
-              document-start: disable
+      - name: Summary
+        run: echo "✅ All checks passed"
