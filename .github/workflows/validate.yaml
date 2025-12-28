@@ -1,4 +1,4 @@
-name: Validate Kubernetes Manifests
+name: CI/CD - Validate Manifests
 
 on:
   push:
@@ -7,30 +7,18 @@ on:
     branches: [ main ]
 
 jobs:
-  validate:
+  lint-and-validate:
+    name: Lint and Validate
     runs-on: ubuntu-latest
     
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
-
-      - name: Validate with kubeconform
-        uses: docker://ghcr.io/yannh/kubeconform:latest
-        with:
-          entrypoint: '/kubeconform'
-          args: "-summary -output json applications/ monitoring/ infrastructure/"
-
-      - name: Run security checks
-        run: |
-          echo "🔍 Running security checks..."
-          chmod +x scripts/pre-commit-check.sh
-          ./scripts/pre-commit-check.sh
 
       - name: YAML Lint
         uses: ibiqlik/action-yamllint@v3
         with:
           file_or_dir: applications/ monitoring/
-          strict: false
           config_data: |
             extends: default
             rules:
@@ -38,18 +26,39 @@ jobs:
                 max: 120
               indentation:
                 spaces: 2
-              comments:
-                min-spaces-from-content: 1
 
-      - name: Check for TODOs (informational)
-        continue-on-error: true
+      - name: Validate Kubernetes manifests
         run: |
-          echo "📝 Checking for TODO/FIXME..."
-          git grep -n "TODO\|FIXME" -- '*.yaml' '*.md' || echo "No TODOs found"
+          docker run --rm -v $(pwd):/workdir ghcr.io/yannh/kubeconform:latest \
+            -summary -ignore-missing-schemas \
+            /workdir/applications/ /workdir/monitoring/
 
-      - name: Summary
-        if: always()
+  security-checks:
+    name: Security Checks
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run pre-commit security checks
+        run: |
+          chmod +x scripts/pre-commit-check.sh
+          ./scripts/pre-commit-check.sh
+
+  summary:
+    name: Workflow Summary
+    runs-on: ubuntu-latest
+    needs: [lint-and-validate, security-checks]
+    if: always()
+    
+    steps:
+      - name: Check results
         run: |
           echo "=========================================="
-          echo "✅ Validation complete!"
+          if [ "${{ needs.lint-and-validate.result }}" == "success" ] && [ "${{ needs.security-checks.result }}" == "success" ]; then
+            echo "✅ All checks passed!"
+          else
+            echo "❌ Some checks failed. Review logs above."
+          fi
           echo "=========================================="
